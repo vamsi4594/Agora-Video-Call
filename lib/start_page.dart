@@ -2,6 +2,7 @@ import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'audio_call_page.dart';
 import 'call_page.dart';
 
 class StartPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class _StartPageState extends State<StartPage> {
   /// if channel textField is validated to have error
   bool _validateError = false;
 
-  ClientRole? _role = ClientRole.Broadcaster;
+  // ClientRole? _role = ClientRole.Broadcaster;
 
   @override
   void dispose() {
@@ -29,7 +30,7 @@ class _StartPageState extends State<StartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Agora Flutter QuickStart'),
+        title: Text('Agora Flutter'),
       ),
       body: Center(
         child: Container(
@@ -53,42 +54,55 @@ class _StartPageState extends State<StartPage> {
                       ))
                 ],
               ),
-              Column(
-                children: [
-                  ListTile(
-                    title: Text(ClientRole.Broadcaster.toString()),
-                    leading: Radio(
-                      value: ClientRole.Broadcaster,
-                      groupValue: _role,
-                      onChanged: (ClientRole? value) {
-                        setState(() {
-                          _role = value;
-                        });
-                      },
-                    ),
-                  ),
-                  ListTile(
-                    title: Text(ClientRole.Audience.toString()),
-                    leading: Radio(
-                      value: ClientRole.Audience,
-                      groupValue: _role,
-                      onChanged: (ClientRole? value) {
-                        setState(() {
-                          _role = value;
-                        });
-                      },
-                    ),
-                  )
-                ],
-              ),
+              // Column(
+              //   children: [
+              //     ListTile(
+              //       title: Text(ClientRole.Broadcaster.toString()),
+              //       leading: Radio(
+              //         value: ClientRole.Broadcaster,
+              //         groupValue: _role,
+              //         onChanged: (ClientRole? value) {
+              //           setState(() {
+              //             _role = value;
+              //           });
+              //         },
+              //       ),
+              //     ),
+              //     ListTile(
+              //       title: Text(ClientRole.Audience.toString()),
+              //       leading: Radio(
+              //         value: ClientRole.Audience,
+              //         groupValue: _role,
+              //         onChanged: (ClientRole? value) {
+              //           setState(() {
+              //             _role = value;
+              //           });
+              //         },
+              //       ),
+              //     )
+              //   ],
+              // ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Row(
                   children: <Widget>[
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: onJoin,
-                        child: Text('Join'),
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.video_call),
+                        onPressed: onJoinVideoCall,
+                        label: Text('Video Call'),
+                        style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
+                            foregroundColor: MaterialStateProperty.all(Colors.white)
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 20,),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.phone),
+                        onPressed: onJoinAudioCall,
+                        label: Text('Audio Call'),
                         style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all(Colors.blueAccent),
                             foregroundColor: MaterialStateProperty.all(Colors.white)
@@ -105,7 +119,7 @@ class _StartPageState extends State<StartPage> {
     );
   }
 
-  Future<void> onJoin() async {
+  Future<void> onJoinVideoCall() async {
     // update input validation
     setState(() {
       _channelController.text.isEmpty
@@ -116,22 +130,34 @@ class _StartPageState extends State<StartPage> {
       // await for camera and mic permissions before pushing video page
       await _handleCameraAndMic(Permission.camera);
       await _handleCameraAndMic(Permission.microphone);
-      // push video page with given channel name
-      // await Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => CallPage(
-      //       channelName: _channelController.text,
-      //       role: _role,
-      //     ),
-      //   ),
-      // );
       await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => CallPage(
             channelName: _channelController.text,
-            role: _role,
+            role: ClientRole.Broadcaster,
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> onJoinAudioCall() async {
+    // update input validation
+    setState(() {
+      _channelController.text.isEmpty
+          ? _validateError = true
+          : _validateError = false;
+    });
+    if (_channelController.text.isNotEmpty) {
+      // await for camera and mic permissions before pushing video page
+      await _handleCameraAndMic(Permission.camera);
+      await _handleCameraAndMic(Permission.microphone);
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioCallPage(
+            channel: _channelController.text,
           ),
         ),
       );
